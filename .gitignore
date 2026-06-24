@@ -1,0 +1,25 @@
+# 版权原因：PDF 原文不随仓库分发
+*.pdf
+
+# 版权原因：从 PDF 自动生成的知识文件不随仓库分发（custom.json 除外）
+knowledge/authoritative.json
+knowledge/terms.json
+knowledge/category_framework.json
+knowledge/impact_matrix.json
+knowledge/grade_matrix.json
+knowledge/grading_rules.json
+
+# 图片
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# 临时文件
+_t.json

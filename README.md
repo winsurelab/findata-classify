@@ -1,94 +1,145 @@
 # findata-classify
 
-基于《金融信息服务数据分类分级指南》（国信办通字〔2026〕2号）对金融数据进行分类分级的 OpenCode 技能。
+[English](#english) | [中文](#中文)
 
-输入数据名称，输出 JSON 结构化建议（三级分类路径 + 分级 + 升级条件）。
+---
 
-## 依赖
+## 中文
 
-- Python 3.10+
-- [PyMuPDF](https://pypi.org/project/PyMuPDF/)（用于从 PDF 提取表格）
+### 概述
+
+`findata-classify` 是一个金融数据分类分级工具，基于《金融信息服务数据分类分级指南》（国信办通字〔2026〕2号）对金融数据进行自动分类（三级分类体系）和分级（四级分级体系）。
+
+支持两种推理模式：
+- **精确匹配** — 基于知识库（67 条权威分类 + 用户自定义）的关键字匹配
+- **语义推理** — 大模型驱动的语义匹配 + 首原理分级矩阵推理（当关键字匹配无结果时）
+
+可集成于 Claude Code、OpenCode、WorkBuddy 等 AI 助手，通过 `/findata-classify` 命令触发。
+
+### 快速开始
 
 ```bash
+# 克隆仓库
+git clone https://github.com/winsurelab/findata-classify.git
+cd findata-classify
+
+# 首次使用：初始化知识库（需联网下载官方 PDF）
 pip install pymupdf
-```
+python init.py
 
-## 安装
-
-将 `findata-classify/` 目录复制到 OpenCode 技能路径：
-
-| 平台 | 路径 |
-|------|------|
-| 全局 | `~/.config/opencode/skills/findata-classify/` |
-| 项目 | `.opencode/skills/findata-classify/` |
-| Claude 兼容 | `~/.claude/skills/findata-classify/` |
-
-## 用法
-
-```
-/findata-classify 身份证号
-/findata-classify 股票实时行情
-/findata-classify 公司员工姓名
-```
-
-也支持命令行直接调用：
-
-```bash
+# 离线关键字匹配
 python classifier.py "身份证号"
-python classifier.py -o result.json "供应链数据"
-python classifier.py --interactive
+
+# 在 AI 助手中使用
+# > /findata-classify 身份证号
 ```
 
-## 数据来源
+> 注：由于版权原因，PDF 原文及提取的知识库文件（`custom.json` 除外）不随仓库分发。首次使用需运行 `init.py` 自动下载并提取。
 
-### 官方文件
+### 架构
 
-《金融信息服务数据分类分级指南》（国信办通字〔2026〕2号）发布在：
+```
+输入数据名称
+    │
+    ├─ Step 1: 关键字匹配（离线）
+    │   custom.json → authoritative.json
+    │   → 命中则直接返回
+    │
+    └─ Step 2: 大模型推理
+        ├─ 阶段①: 语义匹配（67 分类中找最接近）
+        └─ 阶段②: 首原理推理（影响矩阵 → 级别矩阵 → 定级）
+```
 
-- 国家互联网信息办公室官网：http://www.cac.gov.cn
-- 全国标准信息公共服务平台：https://std.samr.gov.cn
+### 文件说明
 
-请自行下载后放入技能目录，文件名需为 `金融信息服务数据分类分级指南.pdf`。
+| 文件 | 说明 |
+|------|------|
+| `classifier.py` | 离线关键字匹配引擎 |
+| `build_knowledge.py` | 从 PDF 提取结构化知识库 |
+| `init.py` | 初始化编排脚本 |
+| `SKILL.md` | AI 助手技能定义 |
+| `knowledge/custom.json` | 用户自定义分类（随仓库分发） |
+| `knowledge/authoritative.json` | 67 条权威分类（由 PDF 提取生成） |
+| `knowledge/terms.json` | 术语定义（由 PDF 提取生成） |
+| `knowledge/category_framework.json` | 三级分类框架（由 PDF 提取生成） |
+| `knowledge/impact_matrix.json` | 影响程度判定表（由 PDF 提取生成） |
+| `knowledge/grade_matrix.json` | 级别判定矩阵（由 PDF 提取生成） |
+| `knowledge/grading_rules.json` | 分级规则（由 PDF 提取生成） |
 
-### authoritative.json 制作方法
+### 输出格式
 
-`knowledge/authoritative.json` 包含 67 条分类记录，使用 `build_knowledge.py` 从 PDF 附录 A 自动提取生成：
+```json
+{
+  "数据名称": "身份证号",
+  "语义匹配度": 90,
+  "分类": { "一级": "用户数据", "二级": "个人用户数据", "三级": "个人用户基本信息" },
+  "分级": "敏感一般数据",
+  "升级条件": ["当1000万人及以上的个人用户基本信息数据集 → 重要数据"],
+  "理由": "依据《金融信息服务数据分类分级指南》附录A，身份证号属于..."
+}
+```
+
+---
+
+## English
+
+### Overview
+
+`findata-classify` automatically classifies and grades financial data according to the *Financial Information Service Data Classification and Grading Guide* (CAC Notice No. 2, 2026). It outputs a 3-level taxonomy path and a 4-tier sensitivity grade.
+
+Two reasoning modes:
+- **Exact match** — keyword lookup against a knowledge base (67 authoritative entries + user custom entries)
+- **Semantic reasoning** — LLM-driven semantic matching + first-principles grading matrix reasoning (fallback when keyword search yields no results)
+
+Integrates with AI assistants like Claude Code, OpenCode, and WorkBuddy via the `/findata-classify` command.
+
+### Quick Start
 
 ```bash
-python build_knowledge.py
+# Clone
+git clone https://github.com/winsurelab/findata-classify.git
+cd findata-classify
+
+# First-time setup (downloads the official PDF)
+pip install pymupdf
+python init.py
+
+# Offline keyword matching
+python classifier.py "resident_id_number"
+
+# Use with AI assistants
+# > /findata-classify resident_id_number
 ```
 
-提取逻辑：
-1. 用 PyMuPDF `find_tables()` 读取 PDF 第 13 页起（附录 A）的全部表格
-2. 每行提取：一级分类、二级分类、三级分类、描述和示例、参考最低级别和升级条件
-3. 按 `一级分类|二级分类|三级分类` 去重
-4. 过滤掉表头垃圾行（如"分类分级依据"）
-5. 输出 JSON 到 `knowledge/authoritative.json`
+> Note: Due to copyright, the original PDF and extracted knowledge files (except `custom.json`) are **not** distributed with the repo. Run `init.py` on first use to download and extract them.
 
-### 自定义覆盖（custom.json）
-
-`knowledge/custom.json` **优先级最高**，用于处理三类特殊情况：
-
-1. **指南未覆盖的类别** — 企业特有的数据分类（如供应链数据）
-2. **规则失效的兜底** — `parse_grade()` 无法正确解析的复杂分级条件，可直接在 custom.json 中写死正确结果
-3. **LLM 无法处理的边缘情况** — 大模型语义匹配可能出错的特例，通过 custom.json 精确命中，跳过 LLM 判断
-
-custom.json 遵循与 authoritative.json 相同的 JSON 结构，查询时若关键字完全匹配，直接返回自定义结果，不经过 LLM 语义匹配。
-
-## 文件结构
+### Architecture
 
 ```
-findata-classify/
-├── SKILL.md                   # 技能入口
-├── classifier.py              # 关键字匹配引擎
-├── build_knowledge.py         # 从 PDF 提取知识库
-├── knowledge/
-│   ├── authoritative.json     # 67 条权威分类（从 PDF 提取）
-│   └── custom.json            # 用户自定义覆盖
-├── 金融信息服务数据分类分级指南.pdf  # 官方原文件（需自行下载）
-└── README.md
+Input Data Name
+    │
+    ├─ Step 1: Keyword Match (offline)
+    │   custom.json → authoritative.json
+    │   → Hit → return directly
+    │
+    └─ Step 2: LLM Reasoning
+        ├─ Phase ①: Semantic matching (among 67 entries)
+        └─ Phase ②: First-principles reasoning (impact matrix → grade matrix → grade)
 ```
 
-## 许可证
+### Output Format
 
-本技能代码部分采用 MIT 许可证。《金融信息服务数据分类分级指南》版权归其发布机构所有。
+```json
+{
+  "数据名称": "resident_id_number",
+  "语义匹配度": 90,
+  "分类": { "一级": "user_data", "二级": "individual_user_data", "三级": "basic_info" },
+  "分级": "sensitive_general_data",
+  "升级条件": ["≥10M records → important_data"],
+  "理由": "Per Appendix A of the Guide, resident ID numbers are classified as..."
+}
+```
+
+### License
+
+MIT
