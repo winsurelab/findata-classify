@@ -23,7 +23,7 @@
 git clone https://github.com/winsurelab/findata-classify.git
 cd findata-classify
 
-# 首次使用：初始化知识库（需联网下载官方 PDF）
+# 首次使用：初始化知识库（自动下载 PDF 并提取）
 pip install pymupdf
 python init.py
 
@@ -34,7 +34,9 @@ python classifier.py "身份证号"
 # > /findata-classify 身份证号
 ```
 
-> 注：由于版权原因，PDF 原文及提取的知识库文件（`custom.json` 除外）不随仓库分发。首次使用需运行 `init.py` 自动下载并提取。
+> **数据来源**：基于国家互联网信息办公室发布的《金融信息服务数据分类分级指南》（国信办通字〔2026〕2号）。
+>
+> 由于版权原因，PDF 原文及提取的知识库文件（`custom.json` 除外）不随仓库分发。首次使用时，`init.py` 会尝试从官方地址自动下载 PDF；若默认链接失效，脚本会提示 AI 助手**自行通过 WebSearch 搜索并下载**，无需手动寻找。知识库提取完成后，运行时不再依赖 PDF。
 
 ### 架构
 
@@ -100,7 +102,7 @@ Integrates with AI assistants like Claude Code, OpenCode, and WorkBuddy via the 
 git clone https://github.com/winsurelab/findata-classify.git
 cd findata-classify
 
-# First-time setup (downloads the official PDF)
+# First-time setup (auto-downloads the official PDF)
 pip install pymupdf
 python init.py
 
@@ -111,7 +113,9 @@ python classifier.py "resident_id_number"
 # > /findata-classify resident_id_number
 ```
 
-> Note: Due to copyright, the original PDF and extracted knowledge files (except `custom.json`) are **not** distributed with the repo. Run `init.py` on first use to download and extract them.
+> **Data source**: Based on the *Financial Information Service Data Classification and Grading Guide* (CAC Notice No. 2, 2026) published by the Cyberspace Administration of China.
+>
+> Due to copyright, the original PDF and extracted knowledge files (except `custom.json`) are **not** distributed with the repo. On first use, `init.py` auto-downloads the PDF from the official URL. If the default link is expired, the script instructs the AI assistant to **search the web** for a valid copy — no manual hunt required. Once extracted, the PDF is no longer needed at runtime.
 
 ### Architecture
 
