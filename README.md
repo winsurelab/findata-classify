@@ -40,11 +40,15 @@ python classifier.py "身份证号"
 
 ### 架构
 
+> **优先级**：`custom.json`（用户自定义）> `authoritative.json`（权威分类）> 大模型语义推理 > 首原理推理
+
 ```
 输入数据名称
     │
     ├─ Step 1: 关键字匹配（离线）
-    │   custom.json → authoritative.json
+    │   custom.json ← 最高优先级，命中即返回
+    │       ↓ miss
+    │   authoritative.json ← 67 条权威分类
     │   → 命中则直接返回
     │
     └─ Step 2: 大模型推理
@@ -60,7 +64,7 @@ python classifier.py "身份证号"
 | `build_knowledge.py` | 从 PDF 提取结构化知识库 |
 | `init.py` | 初始化编排脚本 |
 | `SKILL.md` | AI 助手技能定义 |
-| `knowledge/custom.json` | 用户自定义分类（随仓库分发） |
+| `knowledge/custom.json` | **用户自定义分类（最高优先级，随仓库分发）** |
 | `knowledge/authoritative.json` | 67 条权威分类（由 PDF 提取生成） |
 | `knowledge/terms.json` | 术语定义（由 PDF 提取生成） |
 | `knowledge/category_framework.json` | 三级分类框架（由 PDF 提取生成） |
@@ -119,11 +123,15 @@ python classifier.py "resident_id_number"
 
 ### Architecture
 
+> **Priority**: `custom.json` (user custom) > `authoritative.json` (official) > LLM semantic matching > first-principles reasoning
+
 ```
 Input Data Name
     │
     ├─ Step 1: Keyword Match (offline)
-    │   custom.json → authoritative.json
+    │   custom.json ← highest priority, return on hit
+    │       ↓ miss
+    │   authoritative.json ← 67 official entries
     │   → Hit → return directly
     │
     └─ Step 2: LLM Reasoning
